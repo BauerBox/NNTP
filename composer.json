@@ -1,0 +1,25 @@
+{
+    "name": "bauerbox/nntp",
+    "description": "NNTP Communication Suite for PHP",
+    "keywords": [
+        "nntp",
+        "news",
+        "usenet"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Don Bauer",
+            "email": "lordgnu@me.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.4"
+    },
+    "autoload": {
+        "psr-0": {
+            "BauerBox\\NNTP": "lib/"
+        }
+    }
+}
