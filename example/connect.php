@@ -8,7 +8,7 @@ $nntp = new BauerBox\NNTP\NNTP('us.news.astraweb.com');
 
 $nntp->connect();
 
-print_r($nntp->getCapabilities());
+print_r($nntp->getVersion());
 
 $nntp->disconnect();
 

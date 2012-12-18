@@ -57,6 +57,11 @@ class NNTP
         return $this->executeCommand(new CapabilitiesCommand());
     }
 
+	public function getVersion()
+	{
+		return $this->executeCommand(new VersionCommand());
+	}
+
     public function executeCommand(CommandInterface $command)
     {
         // Execute against the socket
