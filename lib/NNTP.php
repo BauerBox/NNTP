@@ -62,6 +62,7 @@ class NNTP
         // Execute against the socket
         if (true === $this->isConnected()) {
             if (0 < fwrite($this->socket, $command->execute())) {
+                $this->debug("Executing command");
                 return $command->handleResponse($this->getResponse());
             }
         } else {
@@ -84,17 +85,25 @@ class NNTP
         return (false !== $this->socket);
     }
 
+    protected function debug()
+    {
+        foreach (func_get_args() as $arg) {
+            echo "[NNTP] {$arg}/n";
+        }
+    }
+
     protected function getRawResponse()
     {
         $buffer = '';
         while (false !== ($row = fgets($this->socket))) {
-            $buffer .= $buffer;
+            $buffer .= $row;
         }
         return $buffer;
     }
 
     protected function getResponse()
     {
+        $this->debug("Getting Response");
         return Response::parseResponseString($this->getRawResponse());
     }
 }
