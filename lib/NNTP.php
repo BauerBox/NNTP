@@ -62,7 +62,7 @@ class NNTP
         // Execute against the socket
         if (true === $this->isConnected()) {
             if (0 < fwrite($this->socket, $command->execute())) {
-                $this->debug("Executing command");
+                $this->debug("Executing command", $command);
                 return $command->handleResponse($this->getResponse());
             }
         } else {

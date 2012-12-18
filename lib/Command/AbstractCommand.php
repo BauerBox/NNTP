@@ -16,6 +16,11 @@ abstract class AbstractCommand implements CommandInterface
         $this->arguments = $arguments;
     }
 
+    public function __toString()
+    {
+        return $this->formatCommand();
+    }
+
     public function execute(array $arguments = null)
     {
         $this->arguments = $arguments;
