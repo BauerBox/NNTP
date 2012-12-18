@@ -88,14 +88,15 @@ class NNTP
     protected function debug()
     {
         foreach (func_get_args() as $arg) {
-            echo "[NNTP] {$arg}/n";
+            echo "[NNTP] {$arg}" . PHP_EOL;
         }
     }
 
     protected function getRawResponse()
     {
         $buffer = '';
-        while (false !== ($row = fgets($this->socket))) {
+        while (false !== ($row = fgets($this->socket, 4096))) {
+            $this->debug("+ [{$row}]");
             $buffer .= $row;
         }
         return $buffer;
