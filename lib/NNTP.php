@@ -6,6 +6,7 @@ use BauerBox\NNTP\Exception\ConnectionFailedException;
 use BauerBox\NNTP\Util\Response;
 use BauerBox\NNTP\Command\CommandInterface;
 use BauerBox\NNTP\Command\CapabilitiesCommand;
+use BauerBox\NNTP\Command\VersionCommand;
 
 class NNTP
 {
