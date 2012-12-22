@@ -106,8 +106,9 @@ class NNTP
     protected function getRawResponse()
     {
         $buffer = '';
+		$limit = microtime(true) + 1000;
 		$row = fgets($this->socket, 4096);
-        while ($row !== "\r\n") {
+        while ($row !== "\r\n" && microtime(true) < $limit) {
 			$row = fgets($this->socket, 4096);
             $this->debug("+ [{$row}]");
             $buffer .= $row;
