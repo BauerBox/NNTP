@@ -32,6 +32,7 @@ abstract class AbstractCommand implements CommandInterface
 
     public function handleResponse(array $response)
     {
+		print_r($response);
         return true;
     }
 
