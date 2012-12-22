@@ -39,7 +39,7 @@ class NNTP
             );
 			
 			// Set to non-blocking
-			socket_set_blocking($this->socket, 0);
+			//socket_set_blocking($this->socket, 0);
 			
 			print_r($this->getResponse());
         } catch (\Exception $e) {
