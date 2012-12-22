@@ -107,9 +107,9 @@ class NNTP
     {
         $buffer = '';
 		$limit = microtime(true) + 1;
-		$row = fgets($this->socket, 4096);
-        while ($row !== "\r\n" && microtime(true) < $limit) {
-			$row = fgets($this->socket, 4096);
+//		$row = fgets($this->socket, 4096);
+        while (false !== ($row = fgets($this->socket)) && microtime(true) < $limit) {
+//			$row = fgets($this->socket, 4096);
             $this->debug("+ [{$row}]");
             $buffer .= $row;
         }
