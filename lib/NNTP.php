@@ -37,6 +37,9 @@ class NNTP
                 $this->socketErrorMessage,
                 $this->socketTimeout
             );
+			
+			// Set to non-blocking
+			socket_set_blocking($this->socket, 0);
         } catch (\Exception $e) {
             ConnectionFailedException::toss($this->host, $this->port, $e->getMessage(), $e);
         }
