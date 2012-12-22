@@ -101,7 +101,7 @@ class NNTP
     protected function getRawResponse()
     {
         $buffer = '';
-        while (false === feof($this->socket) false !== ($row = fgets($this->socket, 4096))) {
+        while (false === feof($this->socket) && false !== ($row = fgets($this->socket, 4096))) {
             $this->debug("+ [{$row}]");
             $buffer .= $row;
         }
