@@ -2,9 +2,13 @@
 
 namespace BauerBox\NNTP\Command;
 
-use BauerBox\NNTP\Command\AbstractCommand;
+use BauerBox\NNTP\Command\HelpCommand;
 
-class CapabilitiesCommand extends AbstractCommand
+class CapabilitiesCommand extends HelpCommand
 {
-    protected $command = 'CAPABILITIES';
+    public function __construct()
+    {
+        $this->command = 'CAPABILITIES';
+        $this->expectTextResponse = true;
+    }
 }

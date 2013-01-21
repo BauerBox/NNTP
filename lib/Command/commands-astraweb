@@ -1,0 +1,22 @@
+  body [MessageID|Number]
+  date
+  head [MessageID|Number]
+  help
+  mode reader|stream
+  slave
+  quit
+  group newsgroup
+  last
+  next
+  list [active|active.times|newsgroups|extensions|distributions|distrib.pats|moderators|overview.fmt|subscriptions]
+  listgroup newsgroup
+  newgroups yymmdd hhmmss ["GMT"] [<distributions>]
+  post
+  stat [MessageID|Number]
+  xgtitle [group_pattern]
+  xhdr header [range|MessageID]
+  xover [range]
+  xzver [range]
+  xzhdr header [range|MessageID]
+  xpat header range|MessageID pat
+  authinfo user Name|pass Password

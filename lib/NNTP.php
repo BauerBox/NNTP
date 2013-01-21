@@ -4,9 +4,8 @@ namespace BauerBox\NNTP;
 
 use BauerBox\NNTP\Exception\ConnectionFailedException;
 use BauerBox\NNTP\Util\Response;
-use BauerBox\NNTP\Command\CommandInterface;
-use BauerBox\NNTP\Command\CapabilitiesCommand;
 use BauerBox\NNTP\Command\VersionCommand;
+use BauerBox\NNTP\Command\AbstractCommand;
 
 class NNTP
 {
@@ -18,21 +17,27 @@ class NNTP
 
     protected $host;
     protected $port;
+    protected $protocol;
 
-    public function __construct($host, $port = 119, $socketTimeout = 5)
+    public function __construct($host, $port = 119, $protocol = 'tcp', $socketTimeout = 5)
     {
         $this->host = $host;
         $this->port = $port;
         $this->socketTimeout = $socketTimeout;
+        $this->protocol = $protocol;
     }
 
     public function connect()
     {
         // Attempt to open socket
         try {
-            $this->socket = fsockopen(
-                $this->host,
-                $this->port,
+            $this->socket = stream_socket_client(
+                sprintf(
+                    '%s://%s:%d',
+                    $this->protocol,
+                    $this->host,
+                    $this->port
+                ),
                 $this->socketErrorNumber,
                 $this->socketErrorMessage,
                 $this->socketTimeout
@@ -50,12 +55,16 @@ class NNTP
             );
         }
 
-        return $this;
-    }
+        // Check for error
+        $response = $this->getStatusResponse();
 
-    public function getCapabilities()
-    {
-        return $this->executeCommand(new CapabilitiesCommand());
+        if (false === $response->isError()) {
+            return $this;
+        }
+
+        throw new \Exception(
+            'There was an error connecting. Server returned: ' . $response['code'] . ' ' . $response['message']
+        );
     }
 
 	public function getVersion()
@@ -63,13 +72,23 @@ class NNTP
 		return $this->executeCommand(new VersionCommand());
 	}
 
-    public function executeCommand(CommandInterface $command)
+    public function executeCommand(AbstractCommand $command)
     {
         // Execute against the socket
         if (true === $this->isConnected()) {
-            if (0 < fwrite($this->socket, $command->execute())) {
-                $this->debug("Executing command", $command);
-                return $command->handleResponse($this->getResponse());
+            $this->debug("C: " . substr("{$command}", 0, -2));
+
+            if (0 < fwrite($this->socket, "{$command}")) {
+                $response = $this->getStatusResponse();
+                $this->debug('S: ' . $response->getStatus() . ' ' . $response->getMessage());
+
+                $out = $command->handleStatusResponse($response);
+
+                if ($command->expectTextReponse()) {
+                    return $command->handleTextResponse($response->attachLineBuffer($this->getTextResponse()));
+                } else {
+                    return $out;
+                }
             }
         } else {
             // TODO: Throw
@@ -98,19 +117,44 @@ class NNTP
         }
     }
 
-    protected function getRawResponse()
+    protected function getStatusResponse()
     {
-        $buffer = '';
-        while (false !== ($row = fgets($this->socket, 4096))) {
-            $this->debug("+ [{$row}]");
-            $buffer .= $row;
+        if (true === $this->isConnected()) {
+            $response = Response::parseStatusResponse(@fgets($this->socket, 256));
+            return $response;
         }
-        return $buffer;
     }
 
-    protected function getResponse()
+    protected function getTextResponse()
     {
-        $this->debug("Getting Response");
-        return Response::parseResponseString($this->getRawResponse());
+        if (true === $this->isConnected()) {
+            $buffer = array();
+            $line = '';
+
+            while (!feof($this->socket)) {
+                $data = @fgets($this->socket, 1024);
+                $line .= $data;
+
+                if (substr($line, -2) !== "\r\n" || strlen($line) < 2) {
+                    continue;
+                }
+
+                if (substr($line, 0, 2) == '..') {
+                    $line = substr($line, 1);
+                }
+
+                $line = substr($line, 0, -2);
+
+                if ($line == '.') {
+                    break;
+                }
+
+                $buffer[] = $line;
+
+                $line = '';
+            }
+
+            return $buffer;
+        }
     }
 }

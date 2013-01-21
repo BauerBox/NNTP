@@ -22,26 +22,76 @@ class Response
     const CATEGORY_AUTHENTICATION = '[0-9]8[0-9]';
     const CATEGORY_PRIVATE = '[0-9]9[0-9]';
 
-    public static function isError($response)
+    protected $code;
+    protected $lineBuffer;
+    protected $message;
+
+    public function __construct($code, $message, array $lines = null)
     {
-        return (0 < preg_match(sprintf('@^%s@', self::TYPE_ERROR), $response));
+        $this->code = $code;
+        $this->message = $message;
+        $this->lineBuffer = $lines;
     }
 
-    public static function parseResponseString($responseString)
+    public function attachLineBuffer(array $lineBuffer)
     {
-        $response = array();
+        $this->lineBuffer = $lineBuffer;
 
-        if (preg_match('@^(?P<code>[0-9]{3})(?P<message>.*)$@', $responseString, $match)) {
-            $response['code'] = $match['code'];
-            $response['message'] = $match['message'];
+        return $this;
+    }
+
+    public function getStatus()
+    {
+        return (int) $this->code;
+    }
+
+    public function getMessage()
+    {
+        return $this->message;
+    }
+
+    public function getLineBuffer()
+    {
+        return $this->lineBuffer;
+    }
+
+    public function isError()
+    {
+        return (0 < preg_match(sprintf('@^%s@', self::TYPE_ERROR), $this->code));
+    }
+
+    public function isFailure()
+    {
+        return ($this->isError() || 0 < preg_match(sprintf('@^%s@', self::TYPE_FAIL), $this->code));
+    }
+
+    public function isOk()
+    {
+        return (0 < preg_match(sprintf('@^(%s|%s)@', self::TYPE_OK_COMPLETE, self::TYPE_OK_INCOMPLETE), $this->code));
+    }
+
+    public function isComplete()
+    {
+        return (0 < preg_match(sprintf('@^(%s)@', self::TYPE_OK_COMPLETE), $this->code));
+    }
+
+    public function requiresAuthentication()
+    {
+        return ((int) $this->code) === 480;
+    }
+
+    public static function parseStatusResponse($responseString)
+    {
+        $responseString = trim(substr($responseString, 0, -1));
+        if ($responseString !== false) {
+            $response = array(
+                'code' => substr($responseString, 0, 3),
+                'message' => ltrim(substr($responseString, 4))
+            );
+
+            return new Response($response['code'], $response['message']);
         }
 
-        if (false !== $pos = strpos(trim($responseString), "\r\n")) {
-            $response['split'] = $pos;
-        }
-
-        $response['raw'] = $responseString;
-
-        return $response;
+        throw new \Exception('Empty response');
     }
 }

@@ -1,0 +1,21 @@
+  AUTHINFO type value
+  BODY [<msgid>|number]
+  CAPABILITIES
+  DATE
+  GROUP newsgroup
+  HEAD [<msgid>|number]
+  HELP
+  LAST
+  LIST
+  LISTGROUP newsgroup
+  MODE READER
+  NEWGROUPS yyyymmdd hhmmss [GMT]
+  NEWNEWS newsgroups yyyymmdd hhmmss [GMT]
+  NEXT
+  POST
+  STAT
+  XFEATURE
+  XFEATURES
+  XHDR field range
+  XOVER range
+  QUIT
