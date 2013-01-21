@@ -19,8 +19,8 @@ $nntp->connect();
 
 echo "VERSION: " . $nntp->getVersion() . PHP_EOL;
 
-if ($nntp->executeCommand(new AuthinfoCommand(array('USER' => 'lordgnu'))) === AuthinfoCommand::STATUS_SEND_MORE) {
-    if ($nntp->executeCommand(new AuthinfoCommand(array('PASS' => 'un4l14l1'))) === AuthinfoCommand::STATUS_OK) {
+if ($nntp->executeCommand(new AuthinfoCommand(array('USER' => ''))) === AuthinfoCommand::STATUS_SEND_MORE) {
+    if ($nntp->executeCommand(new AuthinfoCommand(array('PASS' => ''))) === AuthinfoCommand::STATUS_OK) {
         echo "Authentication Completed" . PHP_EOL;
     }
 }
