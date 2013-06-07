@@ -59,7 +59,7 @@ class ListCommand extends AbstractCommand
     protected function filterGroup($groupLine)
     {
         if (null === $this->filterRegex) {
-            return $groupLine;
+            return Group::instanceFromListResponse($groupLine);
         }
 
         if (0 < preg_match($this->filterRegex, $groupLine)) {

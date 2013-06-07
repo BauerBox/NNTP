@@ -35,12 +35,17 @@ class HeadCommand extends AbstractCommand
         parent::handleTextResponse($response);
 
         $lines = $response->getLineBuffer();
+        $meta = array();
 
         foreach ($lines as $line) {
-            echo "HEAD: {$line}" . PHP_EOL;
+            $temp = explode(':', $line, 2);
+            if (count($temp) != 2) {
+                continue;
+            }
+            $meta[$temp[0]] = trim($temp[1]);
         }
 
-        return $lines;
+        return $meta;
     }
 
     protected function filterGroup($groupLine)

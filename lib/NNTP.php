@@ -4,8 +4,9 @@ namespace BauerBox\NNTP;
 
 use BauerBox\NNTP\Exception\ConnectionFailedException;
 use BauerBox\NNTP\Util\Response;
-use BauerBox\NNTP\Command\VersionCommand;
 use BauerBox\NNTP\Command\AbstractCommand;
+use BauerBox\NNTP\Command\AuthinfoCommand;
+use BauerBox\NNTP\Command\ListCommand;
 
 class NNTP
 {
@@ -19,16 +20,58 @@ class NNTP
     protected $port;
     protected $protocol;
 
+    protected $config;
+
+    public static $debug = false;
+
     public function __construct($host, $port = 119, $protocol = 'tcp', $socketTimeout = 5)
     {
-        $this->host = $host;
-        $this->port = $port;
-        $this->socketTimeout = $socketTimeout;
-        $this->protocol = $protocol;
+        if (true === $port && true === file_exists($host)) {
+            $this->debug('Loading config file: ' . $host);
+            $this->config = parse_ini_file($host, true);
+            $this->debug('Config Dump', print_r($this->config, true));
+
+            $this->host = $this->config['server']['host'];
+            $this->port = $this->config['server']['port'];
+            $this->protocol = $this->config['server']['protocol'];
+            $this->socketTimeout = $this->config['server']['timeout'];
+        } else {
+            $this->host = $host;
+            $this->port = $port;
+            $this->socketTimeout = $socketTimeout;
+            $this->protocol = $protocol;
+        }
+    }
+
+    public function authenticate($username = null, $password = null)
+    {
+        if (null === $username) {
+            if (true === is_array($this->config)) {
+                $username = $this->config['auth']['username'];
+                $password = $this->config['auth']['password'];
+            }
+        }
+
+        if ($this->executeCommand(new AuthinfoCommand(array('USER' => $username))) === AuthinfoCommand::STATUS_SEND_MORE) {
+            if ($this->executeCommand(new AuthinfoCommand(array('PASS' => $password))) === AuthinfoCommand::STATUS_OK) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function connect()
     {
+        $this->debug(
+            'Connecting ' . sprintf(
+                '%s://%s:%d',
+                $this->protocol,
+                $this->host,
+                $this->port
+            )
+        );
+
         // Attempt to open socket
         try {
             $this->socket = stream_socket_client(
@@ -67,10 +110,10 @@ class NNTP
         );
     }
 
-	public function getVersion()
-	{
-		return $this->executeCommand(new VersionCommand());
-	}
+    public function getActiveGroups($filterRegex = null)
+    {
+        return $this->executeCommand(new ListCommand($filterRegex, array('ACTIVE')));
+    }
 
     public function executeCommand(AbstractCommand $command)
     {
@@ -112,8 +155,10 @@ class NNTP
 
     protected function debug()
     {
-        foreach (func_get_args() as $arg) {
-            echo "[NNTP] {$arg}" . PHP_EOL;
+        if (true === static::$debug) {
+            foreach (func_get_args() as $arg) {
+                echo "[NNTP] {$arg}" . PHP_EOL;
+            }
         }
     }
 
